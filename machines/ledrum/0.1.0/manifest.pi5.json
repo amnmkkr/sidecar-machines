@@ -1,0 +1,15 @@
+{
+  "id": "ledrum",
+  "kind": "machine",
+  "version": "0.1.0",
+  "compatible_from": "0.1.0",
+  "name": "LEDrum",
+  "short": "LEDR",
+  "author": "amnmkkr",
+  "licence": "GPL-3.0-only",
+  "board": "pi5",
+  "api": 3,
+  "source": "https://github.com/amnmkkr/ledrum",
+  "sha256": "ab10de7b2c53e835c1a55dc1bf56ae0dc22d526d858157e0c62811e92a5d5bdd",
+  "description": "A drum voice for kicks, toms, snares, hats and zaps: an oscillator with FM or additive mixing, a pitch envelope, a multimode filter, an amp envelope with adjustable curve, transient samples and distortion. A modified port of the drum voice in the open-source Erica Synths LXR-02 firmware; not affiliated with Erica Synths."
+}
