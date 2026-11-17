@@ -1,4 +1,4 @@
-# TWIN PERC 1.0.0
+# TPFM 1.0.0
 
 A two-oscillator percussion voice in the style of classic semi-modular drum synths: FM from osc 1 into osc 2, hard
 sync, noise, a 4-pole ladder filter with low-pass and high-pass modes, and pitch, filter and amp decays. Kicks, toms,

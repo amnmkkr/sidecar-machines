@@ -3,12 +3,12 @@
   "kind": "machine",
   "version": "1.0.0",
   "compatible_from": "1.0.0",
-  "name": "TWIN PERC",
+  "name": "TPFM",
   "short": "2OSC",
   "author": "amnmkkr",
   "licence": "MIT",
   "board": "pi5",
   "api": 2,
-  "sha256": "d41c0ffb7d159a1cf927b41a499ff6162434efbc15bb110306098bf926e73a3e",
+  "sha256": "7c9642897fc9de7c729f00a690f7cd1666c33b561037aa3c0ccab07eb4e3a721",
   "description": "A two-oscillator percussion voice in the style of classic semi-modular drum synths: FM, hard sync, noise, a ladder filter with low-pass and high-pass modes, and pitch, filter and amp decays. Kicks, toms, snares, clangs and zaps."
 }
