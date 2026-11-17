@@ -34,6 +34,8 @@ long times, measured on the same host. Declared `cpu_permille` 110 for the worst
 
 ## Testing
 
+Played on a Sidecar (Pi) with a Rytm by the author and works as described.
+
 Checked on a desktop build: 840 renders over all four knobs on drums and full-scale noise stay finite and bounded,
 with no denormals or DC, and live knob sweeps are clean. Measured echo times match the settings within 0.2 ms, and a
 synced 1/4 at 120 BPM measures 500.2 ms. Built with `aarch64-linux-gnu-gcc` and packed by the Sidecar repository's

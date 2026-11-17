@@ -45,6 +45,8 @@ State 140 B a voice, image 8 KB, no allocation and no host calls in render. Decl
 
 ## Testing
 
+Played on a Sidecar (Pi) with a Rytm by the author and works as described.
+
 Checked on a desktop build: every knob at both ends, 300 random settings and fast retriggers stay finite and bounded
 (peak at most 0.92), with no denormals and no retrigger clicks. Built with `aarch64-linux-gnu-gcc` and packed by the
 Sidecar repository's `tools/rmp_pack.py`.
