@@ -1,0 +1,14 @@
+{
+  "id": "onebit.echo",
+  "kind": "effect",
+  "version": "1.0.0",
+  "compatible_from": "1.0.0",
+  "name": "1BIT ECHO",
+  "short": "1BIT",
+  "author": "amnmkkr",
+  "licence": "MIT",
+  "board": "pi4",
+  "api": 3,
+  "sha256": "455ae8f08ed866c4b006f99e0560db7dfba998ac233eaee0958af07b15f29069",
+  "description": "A lo-fi 1-bit delay as a send effect (Plugin API 3), modelled on the PT2399 echo chip: a clocked delta-modulation memory, so changing the time bends the pitch and long times get gritty. Free or tempo-synced time, feedback, tone, drift and stall."
+}
