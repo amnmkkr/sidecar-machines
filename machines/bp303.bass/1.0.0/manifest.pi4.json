@@ -7,6 +7,7 @@
   "short": "B303",
   "author": "trigcondition",
   "licence": "MIT",
+  "source": "https://github.com/trigcondition/sidecar-firmware/tree/v0.5.1/plugins/bp303",
   "board": "pi4",
   "api": 2,
   "sha256": "44cad4dd471ae02b780745d8f9634f7bdc115740346d515e0ba0ce9fc84796e6",

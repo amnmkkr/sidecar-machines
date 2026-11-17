@@ -6,7 +6,7 @@ A 303-style acid bass voice: saw/square blend into a diode-ladder style lowpass 
 - Boards: Pi 4 and Pi 5 (the same RMPA package; one file per board here)
 - Plugin API: 2
 - Licence: MIT
-- Source: to be published (not yet in the public source repository)
+- Source: https://github.com/trigcondition/sidecar-firmware/tree/v0.5.1/plugins/bp303
 
 ## Knobs
 
