@@ -1,0 +1,15 @@
+{
+  "id": "sc.grain",
+  "kind": "machine",
+  "version": "1.0.0",
+  "compatible_from": "1.0.0",
+  "name": "GRAIN",
+  "short": "GRN",
+  "author": "trigcondition",
+  "licence": "MIT AND CC0-1.0",
+  "board": "pi5",
+  "api": 2,
+  "source": "https://github.com/trigcondition/sidecar-firmware",
+  "sha256": "7df68f2862cff9d1efd78e07ec56b6e4823228f9d9b7ff962a472ae9b69c8a7d",
+  "description": "A granular texture over a built-in sample: position, spray, size, density, pitch, spread and reverse."
+}

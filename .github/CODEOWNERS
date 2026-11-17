@@ -1,0 +1,7 @@
+# The owner reviews everything; the explicit lines below keep the sensitive paths visible.
+* @trigcondition
+/tools/ @trigcondition
+/.github/ @trigcondition
+/registry/ @trigcondition
+/tests/ @trigcondition
+/site/ @trigcondition

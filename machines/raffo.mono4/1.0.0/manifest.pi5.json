@@ -1,0 +1,15 @@
+{
+  "id": "raffo.mono4",
+  "kind": "machine",
+  "version": "1.0.0",
+  "compatible_from": "1.0.0",
+  "name": "RAFFO",
+  "short": "RAFO",
+  "author": "trigcondition",
+  "licence": "MIT",
+  "board": "pi5",
+  "api": 2,
+  "source": "https://github.com/trigcondition/sidecar-firmware",
+  "sha256": "25bbd0d8e2fd161e29d171e4264473f495ea1fa33f5b14c5e2d56b19f4c80782",
+  "description": "A four-oscillator mono synth with a Moog-style ladder lowpass, two envelopes and glide, for basses and leads. The DSP is RaffoSynth's."
+}

@@ -1,0 +1,15 @@
+{
+  "id": "fx.bbd",
+  "kind": "effect",
+  "version": "1.0.0",
+  "compatible_from": "1.0.0",
+  "name": "BBD",
+  "short": "BBD",
+  "author": "trigcondition",
+  "licence": "MIT",
+  "board": "pi4",
+  "api": 3,
+  "source": "https://github.com/trigcondition/sidecar-firmware",
+  "sha256": "6a3261ac84acdcd748b63f3b07bc759dd2142072b303ac88ef2fff8c2d427334",
+  "description": "A bucket-brigade style analog delay as a send effect (Plugin API 3): free or tempo-synced time, feedback, wow and flutter, tone in the loop."
+}

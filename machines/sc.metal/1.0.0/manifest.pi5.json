@@ -1,0 +1,15 @@
+{
+  "id": "sc.metal",
+  "kind": "machine",
+  "version": "1.0.0",
+  "compatible_from": "1.0.0",
+  "name": "METAL",
+  "short": "METL",
+  "author": "trigcondition",
+  "licence": "MIT",
+  "board": "pi5",
+  "api": 2,
+  "source": "https://github.com/trigcondition/sidecar-firmware",
+  "sha256": "748a347a5f5dbb7e381e64102964b563e3a4147fc4526d36862b7fa77ba9adaf",
+  "description": "Metallic FM percussion with three sine operators and inharmonic ratio sets: bells, cowbells, clanks."
+}

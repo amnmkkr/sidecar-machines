@@ -1,0 +1,15 @@
+{
+  "id": "sc.acid",
+  "kind": "machine",
+  "version": "1.0.0",
+  "compatible_from": "1.0.0",
+  "name": "ACID",
+  "short": "ACID",
+  "author": "trigcondition",
+  "licence": "MIT",
+  "board": "pi5",
+  "api": 2,
+  "source": "https://github.com/trigcondition/sidecar-firmware",
+  "sha256": "8026911cc6bdfc3e7db0f688c8e63dbb03c9e145303e50201d640c5563f9c88f",
+  "description": "A 303-style bass voice: polyBLEP saw/square into a four-pole ladder with envelope mod, accent, slide and drive."
+}

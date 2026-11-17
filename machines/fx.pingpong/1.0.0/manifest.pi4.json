@@ -1,0 +1,15 @@
+{
+  "id": "fx.pingpong",
+  "kind": "effect",
+  "version": "1.0.0",
+  "compatible_from": "1.0.0",
+  "name": "PINGPONG",
+  "short": "PPD",
+  "author": "trigcondition",
+  "licence": "MIT",
+  "board": "pi4",
+  "api": 3,
+  "source": "https://github.com/trigcondition/sidecar-firmware",
+  "sha256": "10ec39c337acbd0850cb6584400c4d0a919fa027efe69a204a8667ed28a3074a",
+  "description": "A tempo-synced stereo ping-pong delay as a send effect (Plugin API 3), the example effect of the plugin API."
+}

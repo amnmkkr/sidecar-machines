@@ -1,0 +1,15 @@
+{
+  "id": "sc.pluck",
+  "kind": "machine",
+  "version": "1.0.0",
+  "compatible_from": "1.0.0",
+  "name": "PLUCK",
+  "short": "PLCK",
+  "author": "trigcondition",
+  "licence": "MIT",
+  "board": "pi4",
+  "api": 2,
+  "source": "https://github.com/trigcondition/sidecar-firmware",
+  "sha256": "e7b2a2b9ce503a368addffef298c4762f582d097bdde5540c0e9d52d1f19a6ac",
+  "description": "A Karplus-Strong plucked string with damping, stiffness and body."
+}

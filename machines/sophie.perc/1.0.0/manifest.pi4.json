@@ -1,0 +1,15 @@
+{
+  "id": "sophie.perc",
+  "kind": "machine",
+  "version": "1.0.0",
+  "compatible_from": "1.0.0",
+  "name": "SOPHIE",
+  "short": "SOPH",
+  "author": "trigcondition",
+  "licence": "MIT",
+  "board": "pi4",
+  "api": 2,
+  "source": "https://github.com/trigcondition/sidecar-firmware",
+  "sha256": "b9790def8927ff7d9e958dd08cd5c9e29b71548a645c524b6f11bfebe8b28b3b",
+  "description": "Metallic FM percussion: kicks, clangs, zaps, bells and shards from a carrier and three modulators at non-integer ratios. The DSP is Sophie's v0.5.1 by Matt Estela."
+}

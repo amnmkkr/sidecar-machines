@@ -1,0 +1,15 @@
+{
+  "id": "fx.nimbus",
+  "kind": "effect",
+  "version": "0.1.0",
+  "compatible_from": "0.1.0",
+  "name": "NIMBUS",
+  "short": "NIMB",
+  "author": "trigcondition",
+  "licence": "MIT",
+  "board": "pi5",
+  "api": 3,
+  "source": "https://github.com/trigcondition/sidecar-firmware",
+  "sha256": "4e30f3818a13a804744c2c6a47850049709f0aaa2bb3a1ba11e31e893b4a4829",
+  "description": "A big ambient reverb with an ensemble pad that follows the harmony of what is sent to it. A send effect (Plugin API 3)."
+}

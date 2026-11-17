@@ -1,0 +1,15 @@
+{
+  "id": "hush1.sh101",
+  "kind": "machine",
+  "version": "1.0.0",
+  "compatible_from": "1.0.0",
+  "name": "HUSH1",
+  "short": "HSH1",
+  "author": "trigcondition",
+  "licence": "MIT",
+  "board": "pi5",
+  "api": 2,
+  "source": "https://github.com/trigcondition/sidecar-firmware",
+  "sha256": "8aa68d2a86b03d7eeeaacf74f73ef8fb4e0777c464351cefa45ad72f7ce0b5de",
+  "description": "An SH-101-style mono synth for basses and leads: saw, pulse, sub and noise into a resonant lowpass with one ADSR. The DSP is HUSH ONE's by Charles Vestal."
+}

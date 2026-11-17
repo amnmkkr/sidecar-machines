@@ -1,0 +1,15 @@
+{
+  "id": "mist.texture",
+  "kind": "machine",
+  "version": "0.1.0",
+  "compatible_from": "0.1.0",
+  "name": "MIST",
+  "short": "MST",
+  "author": "trigcondition",
+  "licence": "MIT",
+  "board": "pi5",
+  "api": 3,
+  "source": "https://github.com/trigcondition/sidecar-firmware",
+  "sha256": "46adfea87062456953c85d21a80aeb88e0d45ea80b4a75399596209947da1070",
+  "description": "A granular texture machine: clouds, smears, frozen pads and wavetable grains, with a built-in oscillator at the trig's note. The DSP is Beads' by Emilie Gillet."
+}

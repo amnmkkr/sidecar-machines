@@ -1,0 +1,15 @@
+{
+  "id": "sc.snare",
+  "kind": "machine",
+  "version": "1.0.0",
+  "compatible_from": "1.0.0",
+  "name": "SNARE",
+  "short": "SNRE",
+  "author": "trigcondition",
+  "licence": "MIT",
+  "board": "pi4",
+  "api": 2,
+  "source": "https://github.com/trigcondition/sidecar-firmware",
+  "sha256": "2a0105ebca410b0fc81b055e9df3f93ea3ffbccf924a545cd1b46b3727395e22",
+  "description": "A snare and noise drum designer: tuned body oscillators with a pitch envelope plus shaped noise."
+}

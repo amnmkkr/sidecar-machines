@@ -1,0 +1,15 @@
+{
+  "id": "nusaw.supersaw",
+  "kind": "machine",
+  "version": "1.0.0",
+  "compatible_from": "1.0.0",
+  "name": "NUSAW",
+  "short": "NSAW",
+  "author": "trigcondition",
+  "licence": "MIT",
+  "board": "pi4",
+  "api": 2,
+  "source": "https://github.com/trigcondition/sidecar-firmware",
+  "sha256": "aaaca7faaa7d7582804d5e4139ec12c8002880c1aeebe5a2aa6616d84b2ec3c6",
+  "description": "A supersaw machine for pads and stabs: seven PolyBLEP saws with a detune curve, drift and a filter. The engine is NuSaw's by Charles Vestal."
+}

@@ -1,0 +1,15 @@
+{
+  "id": "modele.voice",
+  "kind": "machine",
+  "version": "1.1.0",
+  "compatible_from": "1.1.0",
+  "name": "MODEL E",
+  "short": "MDLE",
+  "author": "trigcondition",
+  "licence": "GPL-2.0-or-later",
+  "board": "pi5",
+  "api": 2,
+  "source": "https://github.com/trigcondition/sidecar-firmware",
+  "sha256": "dc79d54594b0c40303107b2af3e77d6563489ab5492a9a983312544a884ee104",
+  "description": "A three-oscillator voice with a ladder filter, contours, glide and noise, for basses and leads. The oscillators are ModelDigi's bank. Free software: GPL-2.0-or-later."
+}

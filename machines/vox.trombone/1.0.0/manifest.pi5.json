@@ -1,0 +1,15 @@
+{
+  "id": "vox.trombone",
+  "kind": "machine",
+  "version": "1.0.0",
+  "compatible_from": "1.0.0",
+  "name": "VOX",
+  "short": "VOX",
+  "author": "trigcondition",
+  "licence": "MIT",
+  "board": "pi5",
+  "api": 2,
+  "source": "https://github.com/trigcondition/sidecar-firmware",
+  "sha256": "c9f3d9993f644cf27838cb6304ac6e2462dd2fd26ef8434c2b2210a3a0abb75e",
+  "description": "A sung or spoken vocal tract: a glottis into a 44-segment waveguide tract, played by knobs and notes. The DSP is Pink Trombone's by Neil Thapen."
+}

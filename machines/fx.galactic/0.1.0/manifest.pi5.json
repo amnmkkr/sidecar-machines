@@ -1,0 +1,15 @@
+{
+  "id": "fx.galactic",
+  "kind": "effect",
+  "version": "0.1.0",
+  "compatible_from": "0.1.0",
+  "name": "GALACTIC",
+  "short": "GLXY",
+  "author": "trigcondition",
+  "licence": "MIT",
+  "board": "pi5",
+  "api": 3,
+  "source": "https://github.com/trigcondition/sidecar-firmware",
+  "sha256": "e5d77d0e2d53290ac6b4f272d8f39a59e196d9112de0066c27c587f7067b5c3e",
+  "description": "Airwindows' Galactic reverb as a send effect (Plugin API 3): vibrato pre-delay, a tank of Householder-mixed delays, always fully wet."
+}

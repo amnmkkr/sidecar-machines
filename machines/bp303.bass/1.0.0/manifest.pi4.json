@@ -1,0 +1,14 @@
+{
+  "id": "bp303.bass",
+  "kind": "machine",
+  "version": "1.0.0",
+  "compatible_from": "1.0.0",
+  "name": "BP303",
+  "short": "B303",
+  "author": "trigcondition",
+  "licence": "MIT",
+  "board": "pi4",
+  "api": 2,
+  "sha256": "44cad4dd471ae02b780745d8f9634f7bdc115740346d515e0ba0ce9fc84796e6",
+  "description": "A 303-style acid bass voice: saw/square blend into a diode-ladder style lowpass with envelope, accent, slide and a soft drive. The voice is BLACKPYRAMIDS_303's, built on Open303."
+}
