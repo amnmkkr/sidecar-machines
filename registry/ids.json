@@ -41,5 +41,6 @@
   "warpwave.*": "trigcondition",
   "warpwave.wt": "trigcondition",
   "wavepad.*": "trigcondition",
+  "wavesurfer": "amnmkkr",
   "wavetable.*": "trigcondition"
 }
