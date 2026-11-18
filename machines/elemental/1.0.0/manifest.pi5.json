@@ -1,0 +1,15 @@
+{
+  "id": "elemental",
+  "kind": "machine",
+  "version": "1.0.0",
+  "compatible_from": "1.0.0",
+  "name": "ELEMENTAL",
+  "short": "ELMT",
+  "author": "amnmkkr",
+  "licence": "MIT",
+  "board": "pi5",
+  "api": 3,
+  "source": "https://github.com/amnmkkr/elemental",
+  "sha256": "52c430167fa05f67f176e08c467cc559bd0be587c8267702eccedce02fd9c3fd",
+  "description": "A modal synthesis voice: the DSP of Elements, Emilie Gillet's modal synthesizer for Mutable Instruments, run unchanged at its own 32 kHz and resampled to 48 kHz. Struck, bowed and blown resonators, a string and sympathetic strings, its reverb and the hidden ominous voice. Not affiliated with Mutable Instruments."
+}
