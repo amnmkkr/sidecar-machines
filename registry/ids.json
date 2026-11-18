@@ -32,6 +32,7 @@
   "sidecar.*": "trigcondition",
   "sophie.*": "trigcondition",
   "sophie.perc": "trigcondition",
+  "tapedelay2": "amnmkkr",
   "twinperc.perc": "amnmkkr",
   "vox.*": "trigcondition",
   "vox.trombone": "trigcondition",
