@@ -1,0 +1,15 @@
+{
+  "id": "fxwizard",
+  "kind": "effect",
+  "version": "1.0.0",
+  "compatible_from": "1.0.0",
+  "name": "FXWIZARD",
+  "short": "FXWZ",
+  "author": "amnmkkr",
+  "licence": "MIT",
+  "board": "pi5",
+  "api": 3,
+  "source": "https://github.com/amnmkkr/fxwizard",
+  "sha256": "7108f849152db7aa3b84cb13f1a14697ec90775bb07cc6b6b4fc241263e32eed",
+  "description": "Bastl Instruments' Kastle 2 FX Wizard (MIT) as a send effect: nine effects (delay, flanger, freezer, panner, crusher, slicer, pitcher, replayer, shifter) on MODE, TIME, FEEDBACK and AMOUNT. FX Wizard's own code runs unchanged at 44 kHz; its clock follows the Rytm's tempo and its trigger fires every bar."
+}
