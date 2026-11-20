@@ -86,13 +86,15 @@ machines/<id>/<version>/preview/
 ```
 
 - 1 to 8 files, **`.mp3` only** (MPEG audio layer III; no other file types, no sub-folders, no links). The checker
-  reads the file header: it needs a valid MP3 frame (after an optional ID3 tag of at most 64 KB) followed by another,
-  so a renamed `.wav` or a text file fails.
+  walks the whole file: an optional ID3v2 tag (at most 64 KB), then valid MP3 frames one after the other up to the
+  end of the file, optionally followed by a 128-byte ID3v1 tag. A renamed `.wav`, a text file or anything with extra
+  bytes added fails.
 - At most **2 MB per file** and **10 MB per version** in total. A short loop or a few bars at 96 to 128 kbit/s fits
   easily. Previews are downloaded only when someone presses play.
 - The file name without `.mp3` is the name shown in the player. Allowed: letters, digits, space and `_ - . ( ) + #`;
   1 to 40 characters; it starts with a letter or digit, does not end in a space or dot, has no double spaces and no
-  `..`; names that differ only in case count as the same. No hidden files, no non-ASCII characters.
+  `..`; names that differ only in case count as the same; Windows device names (`CON`, `PRN`, `AUX`, `NUL`,
+  `COM1` to `COM9`, `LPT1` to `LPT9`, also in front of a dot) are refused. No hidden files, no non-ASCII characters.
 - The player lists the files **sorted by file name** (plain character order), so use a numeric prefix like `01 `, `02 `
   to choose the order. The prefix is part of the displayed name.
 - Record only audio you may share: previews are published under the same licence terms as the rest of your submission,

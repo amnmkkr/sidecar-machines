@@ -52,6 +52,10 @@
       return wait(function () { return b1.getAttribute("aria-pressed") === "false"; }, 3000);
     }).then(function (r) {
       check(r && b1.textContent === "Play", "pause works");
+      var bar0 = rows[0].querySelector("input[type=range]");
+      bar0.value = 500;
+      bar0.dispatchEvent(new Event("input"));
+      check(Number(bar0.value) === 0, "slider of a track that does not play goes back to 0");
       tog.click();
       check(panel.hidden && tog.getAttribute("aria-expanded") === "false", "toggle closes the list");
       done();

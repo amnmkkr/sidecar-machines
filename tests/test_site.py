@@ -1,4 +1,5 @@
-"""Headless check of the listing page's preview player (site/app.js). Skipped when no Chromium/Chrome is found.
+"""Headless check of the listing page's preview player (site/app.js). Skipped locally when no Chrome/Chromium works;
+when the CI environment variable is set (GitHub Actions) a missing or hanging browser FAILS the test.
 
 Builds a tiny site in a temp directory (the real site files, an index.json with a preview set made of generated
 silent MP3 streams), loads it in headless Chromium, runs tests/site/sitetest.js inside the page and reads the result
@@ -26,12 +27,16 @@ import mp3gen  # noqa: E402
 
 
 def find_browser():
-    for name in ("chromium", "chromium-browser", "google-chrome", "google-chrome-stable", "chrome"):
+    for name in ("google-chrome", "google-chrome-stable", "chrome", "chromium", "chromium-browser"):
         p = shutil.which(name)
         if p:
             return p
     mac = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
     return mac if os.path.exists(mac) else None
+
+
+IN_CI = bool(os.environ.get("CI"))
+TIMEOUT = 60 if IN_CI else 20   # seconds; a hung browser is a skip locally, a failure in CI
 
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
@@ -60,33 +65,43 @@ def build_site(tmp):
     e1 = dict(base, id="test.sine", name="Sine", file="machines/test.sine/1.0.0/x.rmp",
               demo="https://example.org/demo.mp3",
               previews=[{"name": n[:-4], "file": "machines/test.sine/1.0.0/preview/" + n, "bytes": 400 * 417}
-                        for n in ("01 Kick.mp3", "Pad #2 (long).mp3")])
+                        for n in ("01 Kick.mp3", "Pad #2 (long).mp3")]
+              + [{"name": "dot", "file": "machines/./x.mp3", "bytes": 1}])   # refused by the player: not counted
     e2 = dict(base, id="test.plain", name="Plain", file="machines/test.plain/1.0.0/x.rmp")
     with open(os.path.join(tmp, "index.json"), "w") as f:
         json.dump({"schema": 1, "entries": [e2, e1], "latest": {"test.sine": {"pi5": "1.0.0"},
                                                                "test.plain": {"pi5": "1.0.0"}}}, f)
 
 
-@unittest.skipUnless(find_browser(), "no Chromium or Chrome found")
 class SiteTest(unittest.TestCase):
+    def no_browser(self, why):
+        if IN_CI:
+            self.fail(why + " (CI is set: the player test may not be skipped)")
+        self.skipTest(why)
+
     def test_preview_player(self):
+        if not find_browser():
+            self.no_browser("no Chrome or Chromium found")
         tmp = tempfile.mkdtemp()
         try:
             build_site(tmp)
             handler = functools.partial(Quiet, directory=tmp)
             srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
-            threading.Thread(target=srv.serve_forever, daemon=True).start()
+            thread = threading.Thread(target=srv.serve_forever, daemon=True)
+            thread.start()
             prof = tempfile.mkdtemp()
             try:
                 r = subprocess.run(
                     [find_browser(), "--headless=new", "--disable-gpu", "--no-sandbox", "--user-data-dir=" + prof,
                      "--autoplay-policy=no-user-gesture-required", "--virtual-time-budget=20000", "--dump-dom",
                      "http://127.0.0.1:%d/test.html" % srv.server_address[1]],
-                    capture_output=True, timeout=30)
+                    capture_output=True, timeout=TIMEOUT)
             except subprocess.TimeoutExpired:
-                self.skipTest("the browser did not finish in 30 s (some sandboxes block headless Chromium)")
+                self.no_browser("the browser did not finish in %d s (some sandboxes block headless Chromium)" % TIMEOUT)
             finally:
                 srv.shutdown()
+                srv.server_close()
+                thread.join()
                 shutil.rmtree(prof, ignore_errors=True)
             dom = r.stdout.decode("utf-8", "replace")
             m = re.search(r'<pre id="result">(.*?)</pre>', dom, re.S)

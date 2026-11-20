@@ -33,7 +33,7 @@
 
   function previewUrl(f) {
     return typeof f === "string" && /^machines\/[^\\]+\.mp3$/.test(f) && f.indexOf("..") < 0
-      ? f.split("/").map(encodeURIComponent).join("/") : null;
+      && f.split("/").indexOf(".") < 0 ? f.split("/").map(encodeURIComponent).join("/") : null;
   }
 
   function clock(s) {
@@ -120,6 +120,7 @@
     });
     t.bar.addEventListener("input", function () {
       if (playing === t && audio.duration) audio.currentTime = audio.duration * t.bar.value / 1000;
+      else if (playing !== t) t.bar.value = 0;   // nothing plays here: the thumb goes back
     });
     li.appendChild(t.btn);
     li.appendChild(el("span", t.name, "tname"));

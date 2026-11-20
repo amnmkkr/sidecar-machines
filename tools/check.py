@@ -52,6 +52,13 @@ class FileError(Exception):
     pass
 
 
+def safe(text):
+    """`text` with everything outside printable ASCII escaped (as \\n, \\x1b, \\udcff ...): a contributor-chosen file
+    name must not be able to start a line (a GitHub `::error::` command) or break the output encoding."""
+    return "".join(c if " " <= c <= "~" else c.encode("unicode_escape", "backslashreplace").decode("ascii")
+                   for c in str(text))
+
+
 def read_file(path, cap=MAX_FILE):
     """The bytes of a regular file of at most `cap` bytes; symlinks and other file types are refused."""
     try:
@@ -437,18 +444,18 @@ def main(argv=None):
     try:
         ids = load_json(os.path.join(ROOT, "registry", "ids.json"))
     except (FileError, ValueError) as e:
-        print("registry/ids.json: %s" % e)
+        print(safe("registry/ids.json: %s" % e))
         return 1
     errs = check_ids_file(ids)
     if errs:
         for e in errs:
-            print(e)
+            print(safe(e))
         return 1
     if args.changed:
         try:
             paths = changed_paths(args.changed)
         except RuntimeError as e:
-            print(e)
+            print(safe(e))
             return 1
         errs += check_base(args.changed, paths, args.actor)
         dirs, derrs = changed_version_dirs(paths)
@@ -463,7 +470,7 @@ def main(argv=None):
     for d in dirs:
         errs += check_version_dir(d, ids, enforce_newer=not args.all, actor=args.actor)
     for e in errs:
-        print(e)
+        print(safe(e))
     if errs:
         print("%d problem(s)" % len(errs))
         return 1
