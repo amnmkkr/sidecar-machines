@@ -10,6 +10,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import check  # noqa: E402
+import previews  # noqa: E402
 import rmpverify  # noqa: E402
 
 SCHEMA = 1
@@ -27,6 +28,11 @@ def build():
             e["file"] = "%s/%s-%s-%s.rmp" % (rel, m["id"], m["version"], m["board"])
             e["size"] = len(check.read_file(os.path.join(check.ROOT, e["file"])))
             e["readme"] = rel + "/README.md"
+            pv = previews.listing(os.path.join(vdir, previews.FOLDER))
+            if pv:
+                for p in pv:
+                    p["file"] = "%s/%s/%s" % (rel, previews.FOLDER, p["file"])
+                e["previews"] = pv
             entries.append(e)
     entries.sort(key=lambda e: (e["id"], rmpverify.parse_version(e["version"]), e["board"]))
     latest = {}

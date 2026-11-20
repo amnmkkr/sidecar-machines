@@ -26,6 +26,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import previews  # noqa: E402
 import rmpverify  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -49,6 +50,13 @@ SKIP_NAMES = {"README.md"}
 
 class FileError(Exception):
     pass
+
+
+def safe(text):
+    """`text` with everything outside printable ASCII escaped (as \\n, \\x1b, \\udcff ...): a contributor-chosen file
+    name must not be able to start a line (a GitHub `::error::` command) or break the output encoding."""
+    return "".join(c if " " <= c <= "~" else c.encode("unicode_escape", "backslashreplace").decode("ascii")
+                   for c in str(text))
 
 
 def read_file(path, cap=MAX_FILE):
@@ -184,10 +192,13 @@ def check_version_dir(vdir, ids, enforce_newer, actor=None):
         if rmp_name:
             expected.add(rmp_name)
         errs += ["%s: %s" % (mrel, e) for e in merrs]
+    if previews.FOLDER in names:
+        expected.add(previews.FOLDER)
+        errs += check_previews(rel, os.path.join(vdir, previews.FOLDER))
     for extra in sorted(names - expected):
         errs.append("%s: unexpected file %r (a version directory holds README.md, the manifest(s) and the .rmp "
-                    "named <id>-<version>-<board>.rmp)" % (rel, extra))
-    for n in sorted(names & expected):
+                    "named <id>-<version>-<board>.rmp, and optionally a preview/ folder)" % (rel, extra))
+    for n in sorted(names & expected - {previews.FOLDER}):
         try:
             read_file(os.path.join(vdir, n))
         except FileError as e:
@@ -195,6 +206,14 @@ def check_version_dir(vdir, ids, enforce_newer, actor=None):
     if enforce_newer and not errs:
         errs += newer_than_others(rel, dir_id, dir_ver)
     return errs
+
+
+def check_previews(rel, pdir):
+    """The optional preview/ folder of a version directory (rules: tools/previews.py)."""
+    prel = "%s/%s" % (rel.replace(os.sep, "/"), previews.FOLDER)
+    if not real_dir(pdir):
+        return ["%s: must be a directory (symbolic links are refused)" % prel]
+    return ["%s: %s" % (prel, e) for e in previews.check_folder(pdir, read_file, FileError)]
 
 
 def check_manifest_file(vdir, mf, dir_id, dir_ver, boards_seen, ids, actor):
@@ -425,18 +444,18 @@ def main(argv=None):
     try:
         ids = load_json(os.path.join(ROOT, "registry", "ids.json"))
     except (FileError, ValueError) as e:
-        print("registry/ids.json: %s" % e)
+        print(safe("registry/ids.json: %s" % e))
         return 1
     errs = check_ids_file(ids)
     if errs:
         for e in errs:
-            print(e)
+            print(safe(e))
         return 1
     if args.changed:
         try:
             paths = changed_paths(args.changed)
         except RuntimeError as e:
-            print(e)
+            print(safe(e))
             return 1
         errs += check_base(args.changed, paths, args.actor)
         dirs, derrs = changed_version_dirs(paths)
@@ -451,7 +470,7 @@ def main(argv=None):
     for d in dirs:
         errs += check_version_dir(d, ids, enforce_newer=not args.all, actor=args.actor)
     for e in errs:
-        print(e)
+        print(safe(e))
     if errs:
         print("%d problem(s)" % len(errs))
         return 1

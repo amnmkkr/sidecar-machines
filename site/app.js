@@ -27,7 +27,138 @@
     return typeof u === "string" && /^https:\/\//.test(u) ? u : null;
   }
 
+  // Previews: one shared audio element, so only one track plays at a time. preload="none": nothing is fetched until play.
+  var audio = null;
+  var playing = null;   // { btn, bar, time } of the track that is loaded
+
+  function previewUrl(f) {
+    return typeof f === "string" && /^machines\/[^\\]+\.mp3$/.test(f) && f.indexOf("..") < 0
+      && f.split("/").indexOf(".") < 0 ? f.split("/").map(encodeURIComponent).join("/") : null;
+  }
+
+  function clock(s) {
+    if (!isFinite(s)) s = 0;
+    s = Math.floor(s);
+    return Math.floor(s / 60) + ":" + (s % 60 < 10 ? "0" : "") + (s % 60);
+  }
+
+  function resetTrack(t) {
+    t.btn.textContent = "Play";
+    t.btn.setAttribute("aria-label", "Play " + t.name);
+    t.btn.setAttribute("aria-pressed", "false");
+    t.bar.value = 0;
+    t.bar.setAttribute("aria-valuetext", "0:00");
+    t.time.textContent = "0:00";
+  }
+
+  function stopPreview() {
+    if (!audio) return;
+    audio.pause();
+    audio.removeAttribute("src");
+    audio.load();
+    if (playing) resetTrack(playing);
+    playing = null;
+  }
+
+  function getAudio() {
+    if (audio) return audio;
+    audio = new Audio();
+    audio.preload = "none";
+    audio.autoplay = false;
+    audio.addEventListener("timeupdate", function () {
+      if (!playing || !audio.duration) return;
+      playing.bar.value = Math.round(1000 * audio.currentTime / audio.duration);
+      playing.bar.setAttribute("aria-valuetext", clock(audio.currentTime) + " of " + clock(audio.duration));
+      playing.time.textContent = clock(audio.currentTime) + " / " + clock(audio.duration);
+    });
+    audio.addEventListener("pause", function () {
+      if (playing && audio.paused && !audio.ended && audio.getAttribute("src")) {
+        playing.btn.textContent = "Play";
+        playing.btn.setAttribute("aria-label", "Play " + playing.name);
+        playing.btn.setAttribute("aria-pressed", "false");
+      }
+    });
+    audio.addEventListener("play", function () {
+      if (!playing) return;
+      playing.btn.textContent = "Pause";
+      playing.btn.setAttribute("aria-label", "Pause " + playing.name);
+      playing.btn.setAttribute("aria-pressed", "true");
+    });
+    audio.addEventListener("ended", function () { if (playing) resetTrack(playing); playing = null; });
+    audio.addEventListener("error", function () {
+      if (!playing || !audio.getAttribute("src")) return;
+      playing.time.textContent = "could not play";
+      playing.btn.textContent = "Play";
+      playing.btn.setAttribute("aria-pressed", "false");
+      playing = null;
+    });
+    return audio;
+  }
+
+  function track(p, url) {
+    var li = el("li", "", "track");
+    var t = { name: String(p.name), btn: el("button", "Play", "play"), bar: el("input"), time: el("span", "0:00", "meta time") };
+    t.btn.type = "button";
+    t.btn.setAttribute("aria-pressed", "false");
+    t.btn.setAttribute("aria-label", "Play " + t.name);
+    t.bar.type = "range";
+    t.bar.min = 0;
+    t.bar.max = 1000;
+    t.bar.value = 0;
+    t.bar.setAttribute("aria-label", "Position in " + t.name);
+    t.bar.setAttribute("aria-valuetext", "0:00");
+    t.btn.addEventListener("click", function () {
+      var a = getAudio();
+      if (playing === t) {
+        if (a.paused) a.play(); else a.pause();
+        return;
+      }
+      stopPreview();
+      playing = t;
+      a.src = url;
+      a.play().catch(function () { /* the error event reports it */ });
+    });
+    t.bar.addEventListener("input", function () {
+      if (playing === t && audio.duration) audio.currentTime = audio.duration * t.bar.value / 1000;
+      else if (playing !== t) t.bar.value = 0;   // nothing plays here: the thumb goes back
+    });
+    li.appendChild(t.btn);
+    li.appendChild(el("span", t.name, "tname"));
+    li.appendChild(t.bar);
+    li.appendChild(t.time);
+    li._track = t;
+    return li;
+  }
+
+  function previewBlock(e, n) {
+    var items = (Array.isArray(e.previews) ? e.previews : []).map(function (p) {
+      var url = p && previewUrl(p.file);
+      return url && typeof p.name === "string" ? track(p, url) : null;
+    }).filter(Boolean);
+    if (!items.length) return null;
+    var wrap = el("div", "", "previews");
+    var tog = el("button", "Previews (" + items.length + ")", "toggle");
+    var panel = el("ul", "", "tracks");
+    var id = "pv" + n;
+    tog.type = "button";
+    tog.setAttribute("aria-expanded", "false");
+    tog.setAttribute("aria-controls", id);
+    panel.id = id;
+    panel.hidden = true;
+    items.forEach(function (i) { panel.appendChild(i); });
+    tog.addEventListener("click", function () {
+      var open = panel.hidden;
+      panel.hidden = !open;
+      tog.setAttribute("aria-expanded", open ? "true" : "false");
+      if (!open && playing && panel.contains(playing.btn)) stopPreview();
+    });
+    wrap.appendChild(tog);
+    wrap.appendChild(panel);
+    return wrap;
+  }
+
   function render() {
+    stopPreview();
     var term = q.value.trim().toLowerCase();
     var b = board.value;
     var shown = entries.filter(function (e) {
@@ -37,7 +168,7 @@
       return [e.id, e.name, e.short, e.author, e.description, e.licence].join(" ").toLowerCase().indexOf(term) >= 0;
     });
     list.textContent = "";
-    shown.forEach(function (e) {
+    shown.forEach(function (e, n) {
       var li = el("li");
       var h = el("h2", e.name + " ");
       h.appendChild(el("span", e.version, "meta"));
@@ -57,6 +188,8 @@
       if (safeUrl(e.demo)) act.appendChild(link(e.demo, "Demo audio"));
       act.appendChild(link(e.readme, "Readme"));
       li.appendChild(act);
+      var pv = previewBlock(e, n);
+      if (pv) li.appendChild(pv);
       var sha = el("p", "SHA-256 ", "meta");
       sha.appendChild(el("code", e.sha256));
       li.appendChild(sha);

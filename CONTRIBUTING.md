@@ -15,7 +15,8 @@ endorsed by Sidecar.** Read the trust rules before you install anything.
   message.**
 - The checker here is a format check (header, sizes, CRC, relocation table, manifest table, API 3 consistency: the
   rules the Pi's loader and the packer apply). It does not tell you what the code does.
-- Files must be regular files (no symbolic links) of at most 2 MB each.
+- Files must be regular files (no symbolic links) of at most 2 MB each (preview audio has its own limits, see
+  [Previews](#previews)).
 
 ## How to submit
 
@@ -33,6 +34,7 @@ endorsed by Sidecar.** Read the trust rules before you install anything.
    - `<id>-<version>-<board>.rmp`, with `<board>` one of `pi4`, `pi5`, `teensy`.
    - `manifest.json`, see below.
    - `README.md`: what it does, the knobs, credits, build instructions if you have source.
+   - optional `preview/`: 1 to 8 `.mp3` files, see [Previews](#previews).
    A second board of the same version goes in the same directory as `manifest.<board>.json` plus its own `.rmp`.
    Adding a board to an already published version is allowed, and only by the owner of the id; the files already
    there may not change.
@@ -71,6 +73,34 @@ please do not use an e-mail address. `id`, `kind`, `version`, `compatible_from`,
 inside the `.rmp` (the checker compares them); every SPDX identifier in `licence` must appear in the package's own
 licence field (free text of up to 48 characters). `board` `pi4` and `pi5` take an RMPA (AArch64) package, `teensy` an
 RMP1 package. Get the hash with `shasum -a 256 file.rmp`.
+
+## Previews
+
+A machine or effect can show short audio previews on the catalog page. Add a folder `preview/` inside the version
+directory, next to the manifest:
+
+```
+machines/<id>/<version>/preview/
+    01 Init patch.mp3
+    02 Wide and slow.mp3
+```
+
+- 1 to 8 files, **`.mp3` only** (MPEG audio layer III; no other file types, no sub-folders, no links). The checker
+  walks the whole file: an optional ID3v2 tag (at most 64 KB), then valid MP3 frames one after the other up to the
+  end of the file, optionally followed by a 128-byte ID3v1 tag. A renamed `.wav`, a text file or anything with extra
+  bytes added fails.
+- At most **2 MB per file** and **10 MB per version** in total. A short loop or a few bars at 96 to 128 kbit/s fits
+  easily. Previews are downloaded only when someone presses play.
+- The file name without `.mp3` is the name shown in the player. Allowed: letters, digits, space and `_ - . ( ) + #`;
+  1 to 40 characters; it starts with a letter or digit, does not end in a space or dot, has no double spaces and no
+  `..`; names that differ only in case count as the same; Windows device names (`CON`, `PRN`, `AUX`, `NUL`,
+  `COM1` to `COM9`, `LPT1` to `LPT9`, also in front of a dot) are refused. No hidden files, no non-ASCII characters.
+- The player lists the files **sorted by file name** (plain character order), so use a numeric prefix like `01 `, `02 `
+  to choose the order. The prefix is part of the displayed name.
+- Record only audio you may share: previews are published under the same licence terms as the rest of your submission,
+  and must not contain third-party material you have no right to.
+- A preview folder can be added to an already published version by the id's owner (new files only, like a second
+  board); existing files cannot change. The existing `demo` URL in the manifest keeps working next to previews.
 
 ## Versions
 

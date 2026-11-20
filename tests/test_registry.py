@@ -14,6 +14,8 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(os.path.dirname(HERE), "tools"))
 import build_index  # noqa: E402
 import check  # noqa: E402
+import mp3gen  # noqa: E402
+import previews  # noqa: E402
 import rmpgen  # noqa: E402
 import rmpverify  # noqa: E402
 
@@ -369,6 +371,232 @@ class HardeningTest(RegistryTest):
         self.assertTrue(any("stray.txt" in e for e in errs))
 
 
+class PreviewTest(RegistryTest):
+    def folder(self, files=None, ver="1.0.0", **kw):
+        """A version with a preview/ folder; `files` maps a file name to bytes (default: one valid track)."""
+        d = self.add(ver=ver, **kw)
+        p = os.path.join(d, "preview")
+        os.makedirs(p, exist_ok=True)
+        for n, data in (files if files is not None else {"Intro.mp3": mp3gen.make_mp3()}).items():
+            with open(os.path.join(p, n), "wb") as f:
+                f.write(data)
+        return d
+
+    def has(self, d, text):
+        errs = self.run_check(d)
+        self.assertTrue(any(text in e for e in errs), (text, errs))
+
+    def test_valid_folder(self):
+        d = self.folder({"01 Kick.mp3": mp3gen.make_mp3(), "Pad (long).mp3": mp3gen.make_mp3(id3=300)})
+        self.assertEqual(self.run_check(d), [])
+
+    def test_no_folder_is_fine_and_eight_files_pass(self):
+        self.assertEqual(self.run_check(self.add()), [])
+        d = self.folder({"t%d.mp3" % i: mp3gen.make_mp3() for i in range(8)}, ver="1.0.1")
+        self.assertEqual(self.run_check(d), [])
+
+    def test_nine_files(self):
+        self.has(self.folder({"t%d.mp3" % i: mp3gen.make_mp3() for i in range(9)}), "at most 8 are allowed")
+
+    def test_empty_folder(self):
+        self.has(self.folder({}), "is empty")
+
+    def test_wrong_type(self):
+        d = self.folder({"a.wav": mp3gen.make_mp3(), "b.MP3": mp3gen.make_mp3(), "c.mp3.txt": mp3gen.make_mp3(),
+                         "noext": mp3gen.make_mp3()})
+        self.has(d, "'a.wav': must end in .mp3")
+        self.has(d, "'b.MP3': must end in .mp3")
+        self.has(d, "'c.mp3.txt': must end in .mp3")
+        self.has(d, "'noext': must end in .mp3")
+
+    def test_bad_names(self):
+        for n in ("a/b.mp3", "../a.mp3", "a\\b.mp3", "a\x00b.mp3", "\u2026.mp3"):   # cannot be files: the rule alone
+            self.assertIsNotNone(previews.name_problem(n), n)
+        for i, n in enumerate((".mp3", ".hidden.mp3", "a  b.mp3", " a.mp3", "a .mp3", "a..b.mp3", "-a.mp3",
+                               "caf\u00e9.mp3", "a;b.mp3", "x" * 41 + ".mp3", "a\nb.mp3", "..mp3")):
+            d = self.folder({n: mp3gen.make_mp3()}, ver="1.0.%d" % i)
+            self.assertTrue(self.run_check(d), n)
+
+    def test_name_limit_boundary_and_case_clash(self):
+        self.assertIsNone(previews.name_problem("x" * 40 + ".mp3"))
+        self.assertIsNone(previews.name_problem("Take 1.2 (b)+#_x-y.mp3"))
+        d = self.folder({"Kick.mp3": mp3gen.make_mp3()}, ver="1.0.1")
+        real = os.listdir
+        try:   # a case-insensitive file system cannot hold both files: list them by hand
+            previews.os.listdir = lambda p: ["Kick.mp3", "kick.mp3"]
+            errs = previews.check_folder(os.path.join(d, "preview"), check.read_file, check.FileError)
+        finally:
+            previews.os.listdir = real
+        self.assertTrue(any("apart from case" in e for e in errs), errs)
+
+    def test_oversize_file_and_total(self):
+        big = mp3gen.make_mp3(frames=(2 << 20) // mp3gen.FRAME + 1)
+        self.has(self.folder({"big.mp3": big}), "larger than")
+        ok = mp3gen.make_mp3(frames=(2 << 20) // mp3gen.FRAME - 1)
+        self.assertLessEqual(len(ok), 2 << 20)
+        self.assertEqual(self.run_check(self.folder({"a.mp3": ok}, ver="1.0.1")), [])
+        d = self.folder({"t%d.mp3" % i: ok for i in range(6)}, ver="1.0.2")
+        self.has(d, "together the files are")
+
+    def test_fake_mp3(self):
+        for data in (b"not audio at all" * 100, b"RIFF" + b"\0" * 600, mp3gen.make_mp3()[:200], b"\0" * 600,
+                     b"\xff\xe0" + b"\0" * 600,                     # sync bits only: reserved version/layer
+                     mp3gen.make_mp3(1) + b"junk" * 200,              # a frame, then garbage
+                     b"ID3\x04\x00\x00\x7f\x7f\x7f\x7f" + b"\0" * 600):   # tag larger than the file
+            d = self.folder({"fake.mp3": data}, ver="1.0.%d" % (len(data) % 200))
+            self.assertTrue(self.run_check(d), data[:12])
+            shutil.rmtree(d)
+        self.has(self.folder({"fake.mp3": b"hello"}, ver="2.0.0"), "smaller than")
+        self.has(self.folder({"wav.mp3": b"RIFF" + b"\0" * 600}, ver="2.0.1"), "no MP3")
+
+    def test_nested_dir_and_symlinks(self):
+        d = self.folder()
+        os.mkdir(os.path.join(d, "preview", "Sub.mp3"))
+        self.has(d, "'Sub.mp3': not a regular file")
+        d2 = self.folder({}, ver="1.0.5")
+        os.rmdir(os.path.join(d2, "preview"))
+        os.symlink(os.path.join(d, "preview"), os.path.join(d2, "preview"))
+        self.has(d2, "must be a directory")
+        d3 = self.folder(ver="1.0.6")
+        os.symlink(os.path.join(d3, "preview", "Intro.mp3"), os.path.join(d3, "preview", "Link.mp3"))
+        self.has(d3, "'Link.mp3': not a regular file")
+
+    def test_preview_as_file_and_other_folders(self):
+        d = self.add()
+        open(os.path.join(d, "preview"), "w").close()
+        self.has(d, "must be a directory")
+        d = self.add(ver="1.0.1")
+        os.mkdir(os.path.join(d, "previews"))
+        self.has(d, "unexpected file 'previews'")
+
+    def test_index_previews(self):
+        self.folder({"B two.mp3": mp3gen.make_mp3(), "A one.mp3": mp3gen.make_mp3(2)}, ver="1.1.0")
+        self.add(ver="1.0.0")
+        by = {e["version"]: e for e in build_index.build()["entries"]}
+        self.assertNotIn("previews", by["1.0.0"])
+        self.assertEqual(by["1.1.0"]["previews"], [
+            {"name": "A one", "file": "machines/test.sine/1.1.0/preview/A one.mp3", "bytes": 2 * mp3gen.FRAME},
+            {"name": "B two", "file": "machines/test.sine/1.1.0/preview/B two.mp3", "bytes": 4 * mp3gen.FRAME}])
+        self.assertEqual(build_index.build()["schema"], 1)
+
+    def test_previews_added_by_owner_only(self):
+        d = self.folder()
+        self.assertEqual(self.run_check(d, actor="alice"), [])
+        self.has_actor(d, "only that GitHub account", "mallory")
+
+    # --- the stream rule: an optional ID3v2 tag, a chain of valid frames to the end, an optional ID3v1 tag
+    def test_valid_streams_of_all_versions(self):
+        F = mp3gen.frame
+        for label, data in (("mpeg1", mp3gen.make_mp3(20)), ("mpeg2", mp3gen.make_mp3(20, version=2)),
+                            ("mpeg2.5", mp3gen.make_mp3(20, version=0)), ("vbr", mp3gen.make_mp3(20, vbr=True)),
+                            ("padding", mp3gen.make_mp3(20, pad=True)), ("id3v1", mp3gen.make_mp3(20, id3v1=True)),
+                            ("id3v2+v1", mp3gen.make_mp3(20, id3=500, id3v1=True)),
+                            ("mixed", F(3, 9, 1) + F(3, 14, 2, 1) + F(3, 1, 0) * 12), ("one frame", F() * 1)):
+            self.assertIsNone(previews.mp3_problem(data), label)
+
+    def test_frames_then_junk(self):
+        good = mp3gen.make_mp3(10)
+        for label, data in (("junk", mp3gen.make_mp3(2) + b"<script>alert(1)</script>" * 1000),
+                            ("junk after many", good + b"junk" * 300), ("one byte", good + b"\0"),
+                            ("cut frame", good[:-5]), ("v1 too short", good + b"TAG" + b"\0" * 100),
+                            ("v1 too long", good + b"TAG" + b"\0" * 200), ("two v1", good + (b"TAG" + b"\0" * 125) * 2),
+                            ("tag in the middle", mp3gen.make_mp3(3, id3v1=True) + mp3gen.make_mp3(3)),
+                            ("zeros", good + b"\0" * 4096), ("128 bytes, no tag", good + b"\0" * 128)):
+            self.assertIsNotNone(previews.mp3_problem(data), label)
+        self.assertIn("after 2 frames", previews.mp3_problem(mp3gen.make_mp3(2) + b"x" * 2000))
+        d = self.folder({"junk.mp3": mp3gen.make_mp3(2) + b"x" * 2000})
+        self.has(d, "after 2 frames")
+
+    def test_frame_chain_is_bounded(self):
+        # 24 byte frames (MPEG-2, 8 kbit/s, 24 kHz) walk to the end of a 2 MiB file without trouble
+        f = mp3gen.frame(2, 1, 1)
+        self.assertEqual(len(f), 24)
+        self.assertIsNone(previews.mp3_problem(f * ((2 << 20) // 24)))
+
+    def test_id3_limits(self):
+        good = mp3gen.make_mp3(5)
+        self.assertIsNone(previews.mp3_problem(mp3gen.id3v2(previews.MAX_ID3) + good))
+        self.assertIn("ID3 tag is larger", previews.mp3_problem(mp3gen.id3v2(previews.MAX_ID3 + 1) + good))
+        for size in (b"\x00\x00\x00\x80", b"\x00\x00\x80\x00", b"\x80\x00\x00\x00", b"\x00\x00\x00\xff"):
+            self.assertEqual(previews.mp3_problem(b"ID3\x04\x00\x00" + size + good), "damaged ID3 tag", size)
+        self.assertEqual(previews.mp3_problem(b"ID3\x04\x00"), "damaged ID3 tag")
+        # the footer flag (0x10) adds a 10 byte footer after the tag
+        self.assertIsNone(previews.mp3_problem(mp3gen.id3v2(100, flags=0x10) + good))
+        self.assertIsNotNone(previews.mp3_problem(mp3gen.id3v2(100) + b"3DI\x04\x00\x00\0\0\0\0" + good))
+
+    def test_reserved_frame_headers(self):
+        good = mp3gen.make_mp3(5)
+        rest = good[mp3gen.FRAME:]
+        for label, head in (("no sync bits", b"\x7f\xfb\x90\x00"), ("sync 10 bits", b"\xff\xdb\x90\x00"),
+                            ("bitrate index 15", b"\xff\xfb\xf0\x00"), ("free format", b"\xff\xfb\x00\x00"),
+                            ("sample rate bits 3", b"\xff\xfb\x9c\x00"), ("reserved version", b"\xff\xeb\x90\x00"),
+                            ("layer II", b"\xff\xfd\x90\x00"), ("layer I", b"\xff\xff\x90\x00"),
+                            ("reserved layer", b"\xff\xf9\x90\x00")):
+            data = head + good[4:mp3gen.FRAME] + rest
+            self.assertIsNotNone(previews.mp3_problem(data), label)
+            # the same header in the middle of the chain breaks it too
+            self.assertIsNotNone(previews.mp3_problem(good[:mp3gen.FRAME] + head + good[4:mp3gen.FRAME] + rest), label)
+
+    def test_only_64_names_are_looked_at(self):
+        calls = []
+        real = previews.os.listdir
+        try:
+            previews.os.listdir = lambda p: ["t%03d.mp3" % i for i in range(200)]
+            errs = previews.check_folder("x", lambda path, cap: calls.append(path) or mp3gen.make_mp3(), check.FileError)
+        finally:
+            previews.os.listdir = real
+        self.assertEqual(len(calls), 64)
+        self.assertTrue(any("at most 8" in e for e in errs))
+
+    def test_windows_reserved_names(self):
+        for n in ("CON", "con", "Prn", "AUX", "nul", "COM1", "com9", "LPT1", "lpt9", "CON.x", "nul.tar", "aux.v2.1", "Com3.take"):
+            self.assertIn("reserved on Windows", previews.name_problem(n + ".mp3"), n)
+        for n in ("CONX", "xCON", "COM0", "COM10", "LPT0", "x.CON", "console", "My CON", "CON1", "COMM1"):
+            self.assertIsNone(previews.name_problem(n + ".mp3"), n)
+        self.has(self.folder({"NUL.mp3": mp3gen.make_mp3()}), "reserved on Windows")
+
+    # --- output safety: a contributor's file name must not start a line or break the encoding
+    def test_names_are_escaped_in_the_output(self):
+        for i, name in enumerate(("x\n::error::pwned.mp3", "x\x1b[31m.mp3", "x\r::warning::y.mp3", "a\u2028b.mp3")):
+            d = self.folder({name: mp3gen.make_mp3()}, ver="1.0.%d" % i)
+            errs = self.run_check(d)
+            self.assertTrue(errs, name)
+            for e in errs:
+                self.assertEqual(len(e.splitlines()), 1, e)
+                self.assertTrue(e.isascii() and e.isprintable(), e)
+            shutil.rmtree(d)
+
+    def test_main_prints_one_safe_line_per_problem(self):
+        d = self.folder({"x\n::error::pwned\x1b[31m.mp3": mp3gen.make_mp3(), "ok.mp3": mp3gen.make_mp3(2) + b"y" * 999})
+        out = io.StringIO()
+        old, check.ROOT = check.ROOT, self.tmp
+        try:
+            with contextlib.redirect_stdout(out):
+                self.assertEqual(check.main([d]), 1)
+        finally:
+            check.ROOT = old
+        lines = out.getvalue().splitlines()
+        self.assertTrue(lines)
+        self.assertFalse([l for l in lines if l.startswith("::")], lines)
+        self.assertTrue(all(l.isascii() and l.isprintable() for l in lines), lines)
+        self.assertTrue(any("\\n::error::pwned" in l for l in lines), lines)
+
+    def test_non_utf8_names_print_safely(self):
+        bad = os.fsdecode(b"caf\xe9\xff.mp3")      # surrogate escapes, as os.listdir gives them
+        real = previews.os.listdir
+        try:
+            previews.os.listdir = lambda p: [bad, "ok.mp3"]
+            errs = previews.check_folder("x", lambda path, cap: mp3gen.make_mp3(), check.FileError)
+        finally:
+            previews.os.listdir = real
+        self.assertEqual(len(errs), 1)
+        errs[0].encode("ascii")                          # does not raise
+        check.safe("%s: x" % bad).encode("ascii")
+
+    def has_actor(self, d, text, actor):
+        self.assertTrue(any(text in e for e in self.run_check(d, actor=actor)))
+
+
 class ApiParityTest(unittest.TestCase):
     """Rules of the Pi loader (apply_a64, rmp_manifest_read) and of rmp_pack.py (api3_flags)."""
     ADRP = 0x90000000
@@ -484,6 +712,22 @@ class GitModeTest(unittest.TestCase):
         self.commit()
         rc, out = self.run_main("--actor", "alice")
         self.assertEqual(rc, 0, out)
+
+    def test_pr_with_previews(self):
+        self.write_ids({"test.sine": "alice"})
+        self.submit("test.sine")
+        p = os.path.join(self.tmp, "machines", "test.sine", "1.0.0", "preview")
+        os.makedirs(p)
+        with open(os.path.join(p, "Intro.mp3"), "wb") as f:
+            f.write(mp3gen.make_mp3())
+        self.commit()
+        self.assertEqual(self.run_main("--actor", "alice")[0], 0)
+        with open(os.path.join(p, "Bad.mp3"), "wb") as f:
+            f.write(b"x" * 600)
+        self.git("add", "machines"); self.git("commit", "-q", "-m", "bad")
+        rc, out = self.run_main("--actor", "alice")
+        self.assertEqual(rc, 1)
+        self.assertIn("preview: 'Bad.mp3': no MP3", out)
 
     def test_wrong_actor(self):
         self.write_ids({"test.sine": "alice"})
