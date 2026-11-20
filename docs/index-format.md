@@ -41,9 +41,24 @@ then `board`. Published versions stay in the index; nothing is ever removed.
 | `file` | string | Path of the `.rmp` file, relative to the repository (and site) root. |
 | `size` | integer | Size of the `.rmp` file in bytes. |
 | `readme` | string | Path of the version's `README.md`, relative to the root. |
+| `previews` | array, optional | Audio previews of the version (the same list on every board's entry), see below. Absent when the version has no `preview/` folder. |
 
 Paths are relative so the index works under any base URL (GitHub Pages project sites included). A downloader must
 verify `sha256` after fetching.
+
+### `previews`
+
+Each item describes one `.mp3` file of the version's `preview/` folder (1 to 8 of them, checked by `tools/check.py`),
+sorted by file name:
+
+| key | type | meaning |
+|---|---|---|
+| `name` | string | Display name: the file name without `.mp3`. |
+| `file` | string | Path of the file, relative to the root, like `file` above. |
+| `bytes` | integer | Size of the file in bytes. |
+
+Consumers should stream a preview only when the user asks for it (the listing page uses `preload="none"`). Previews
+are not covered by `sha256`.
 
 ## `latest`
 
