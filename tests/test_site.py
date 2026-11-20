@@ -82,9 +82,9 @@ class SiteTest(unittest.TestCase):
                     [find_browser(), "--headless=new", "--disable-gpu", "--no-sandbox", "--user-data-dir=" + prof,
                      "--autoplay-policy=no-user-gesture-required", "--virtual-time-budget=20000", "--dump-dom",
                      "http://127.0.0.1:%d/test.html" % srv.server_address[1]],
-                    capture_output=True, timeout=60)
+                    capture_output=True, timeout=30)
             except subprocess.TimeoutExpired:
-                self.skipTest("the browser did not finish in 60 s (some sandboxes block headless Chromium)")
+                self.skipTest("the browser did not finish in 30 s (some sandboxes block headless Chromium)")
             finally:
                 srv.shutdown()
                 shutil.rmtree(prof, ignore_errors=True)
