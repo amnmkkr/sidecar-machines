@@ -1,0 +1,15 @@
+{
+  "id": "tapedelay2",
+  "kind": "effect",
+  "version": "1.1.0",
+  "compatible_from": "1.1.0",
+  "name": "TAPEDELAY2",
+  "short": "TDL2",
+  "author": "amnmkkr",
+  "licence": "MIT",
+  "board": "pi5",
+  "api": 3,
+  "source": "https://github.com/amnmkkr/tapedelay2",
+  "sha256": "768f24cfc3c0d97c144c4ce13c06053b332cd81d462979db37382c7c018661d9",
+  "description": "Airwindows' TapeDelay2 (Chris Johnson, MIT) as a send effect: a tape loop whose speed sets the time, so a TIME change bends the pitch of the repeats, with a band-pass in the feedback whose resonance is the SMEAR knob, and a gentle fixed flutter. TIME is free or synced to the Rytm's tempo."
+}
